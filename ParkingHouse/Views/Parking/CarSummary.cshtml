@@ -1,0 +1,12 @@
+﻿@model ParkingHouse.DB.Entities.Car
+
+<div class="item">
+
+    <h3>@Model.CarID</h3>
+    <h4>
+        Length: @Model.CarLength, Width @Model.CarWidth,
+        Contract: @Model.HasContract
+    </h4>
+    @Html.ActionLink("Leave from Parking House", "RemoveParkingCar", new { id = @Model.CarID })
+    
+</div>
