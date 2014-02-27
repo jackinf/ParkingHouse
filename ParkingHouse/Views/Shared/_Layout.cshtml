@@ -6,13 +6,19 @@
     <title>@ViewBag.Title</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+
 </head>
 <body>
     <div id="header">
-        <div class="title">PARKING HOUSE</div>
+        <div class="title">PARKING HOUSE   
+            <div class="sum">Total sum: @String.Format("{0:C}", @ViewBag.Sum)</div>        
+        </div>
+        
     </div>
+        
     <div id="sidebar">
         @RenderSection("Add")
+        @RenderSection("EndSimulation")
     </div>
     <div id="content">
         @if (TempData["message"] != null)

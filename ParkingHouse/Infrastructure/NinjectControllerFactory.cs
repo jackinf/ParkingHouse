@@ -8,6 +8,7 @@ using Ninject;
 using ParkingHouse.DB.Abstract;
 using ParkingHouse.DB.Concrete;
 using ParkingHouse.DB.Entities;
+using ParkingHouse.HelperMethods;
 
 namespace ParkingHouse.Infrastructure
 {

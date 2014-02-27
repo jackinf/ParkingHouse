@@ -8,6 +8,6 @@ namespace ParkingHouse.DB.Abstract
         IQueryable<Car> Cars { get; }
         void AddCar(Car car);
 
-        void RemoveCar(int carId);
+        double RemoveCar(int carId);
     }
 }

@@ -12,14 +12,17 @@ namespace ParkingHouse.Controllers
     {
 
         private ICarsParkingRepository _repository;
-        public int PageSize = 10;
+        private static double _sum = 0;
+        private static uint _totalCars = 0;
 
         public ParkingController(ICarsParkingRepository repo)
         {
             _repository = repo;
         }
-        public ViewResult List()
+        public ActionResult List()
         {
+            ViewBag.Sum = _sum;
+            ViewBag.TotalCars = _totalCars;
             return View(_repository.Cars);
         }
 
@@ -28,14 +31,15 @@ namespace ParkingHouse.Controllers
 
             if (ModelState.IsValid)
             {
-                _repository.RemoveCar(id);
+                _sum += _repository.RemoveCar(id);
+                _totalCars++;
                 TempData["message"] = "A vehicle has left the parking house!";
-                return RedirectToAction("List");
+                return RedirectToAction("List", new{ id = _sum});
             }
             else
             {
                 TempData["message"] = "The vehicle has broken down.";
-                return View("List");
+                return RedirectToAction("List");
             }           
         }
 
@@ -51,8 +55,28 @@ namespace ParkingHouse.Controllers
             else
             {
                 TempData["message"] = "The vehicle does not fit.";
-                return View("List");
+                return RedirectToAction("List");
             }
+        }
+
+        public ActionResult EndSimulation()
+        {
+            foreach (var car in _repository.Cars.ToList())
+            {
+                RemoveParkingCar(car.CarID);
+            }            
+            TempData["message"] = "Simulation ended! All vehicles have left.";            
+            return RedirectToAction("List", new{ sum = _sum, carsTotal = _totalCars});
+        }
+        public JsonResult GetTotal(double? sum, int? carsTotal)
+        {
+            _sum = 0;
+            _totalCars = 0;
+            return Json(new
+            {
+                sum, 
+                carsTotal
+            }, JsonRequestBehavior.AllowGet);
         }
     }
 }
