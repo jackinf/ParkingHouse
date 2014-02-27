@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using ParkingHouse.DB.Abstract;
 using ParkingHouse.DB.Entities;
+using ParkingHouse.Models;
 
 namespace ParkingHouse.Controllers
 {
@@ -12,27 +13,26 @@ namespace ParkingHouse.Controllers
     {
 
         private ICarsParkingRepository _repository;
-        private static double _sum = 0;
-        private static uint _totalCars = 0;
-        private static int _carsParking = 0;
-        private static bool _endSimulation;
-
+      
         public ParkingController(ICarsParkingRepository repo)
         {
-            _endSimulation = false;
-            _repository = repo;
+            _repository = repo;                        
         }
 
         public ActionResult List()
         {
-            ViewBag.Sum = _sum;
-            ViewBag.Cars = _carsParking;
-            ViewBag.TotalCars = _totalCars;
-            if (_endSimulation)
-            {                
-                _sum = 0;
-                _totalCars = 0;                
+            if (ParkingLot.TemporarySum != 0.0 && ParkingLot.TemporaryTotalCars != 0)
+            {
+                TempData["summarySum"] = ParkingLot.TemporarySum;
+                TempData["summaryCars"] = ParkingLot.TemporaryTotalCars;
+                ParkingLot.TemporaryTotalCars = 0;
+                ParkingLot.TemporarySum = 0;
             }
+
+            ViewBag.Sum = ParkingLot.Sum;
+            ViewBag.Cars = ParkingLot.CarsParking;
+            ViewBag.TotalCars = ParkingLot.TotalCars;
+
             return View(_repository.Cars);
         }
 
@@ -41,11 +41,11 @@ namespace ParkingHouse.Controllers
 
             if (ModelState.IsValid)
             {
-                _sum += _repository.RemoveCar(id);
-                _totalCars++;
-                _carsParking--;
+                ParkingLot.Sum += _repository.RemoveCar(id);
+                ParkingLot.TotalCars++;
+                ParkingLot.CarsParking--;
                 TempData["message"] = "A vehicle has left the parking house!";
-                return RedirectToAction("List", new{ id = _sum});
+                return RedirectToAction("List", new{ id = ParkingLot.Sum});
             }
             else
             {
@@ -61,7 +61,7 @@ namespace ParkingHouse.Controllers
             if (ModelState.IsValid)
             {
                 _repository.AddCar(car);
-                _carsParking = _repository.Cars.Count();
+                ParkingLot.CarsParking = _repository.Cars.Count();
                 TempData["message"] = "A vehicle has entered the parking house!";
                 return RedirectToAction("List");
             }
@@ -79,7 +79,9 @@ namespace ParkingHouse.Controllers
                 RemoveParkingCar(car.CarID);
             }            
             TempData["message"] = "Simulation ended! All vehicles have left.";
-            _endSimulation = true;            
+            ParkingLot.TemporarySum = ParkingLot.Sum;
+            ParkingLot.TemporaryTotalCars = ParkingLot.TotalCars;
+            ParkingLot.Reset();         
             return RedirectToAction("List");
         }
     }

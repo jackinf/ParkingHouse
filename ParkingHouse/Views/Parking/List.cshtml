@@ -19,4 +19,10 @@
     @{        
         Html.RenderPartial("EndSimulation");
     }    
+   
+}
+@if (TempData["summarySum"] != null)
+{
+        <div class="Message">@TempData["summaryCars"] cars visited.</div>
+        <div class="Message">Total profit @string.Format("{0:c}", TempData["summarySum"])</div>
 }
