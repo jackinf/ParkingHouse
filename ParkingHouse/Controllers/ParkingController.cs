@@ -14,15 +14,25 @@ namespace ParkingHouse.Controllers
         private ICarsParkingRepository _repository;
         private static double _sum = 0;
         private static uint _totalCars = 0;
+        private static int _carsParking = 0;
+        private static bool _endSimulation;
 
         public ParkingController(ICarsParkingRepository repo)
         {
+            _endSimulation = false;
             _repository = repo;
         }
+
         public ActionResult List()
         {
             ViewBag.Sum = _sum;
+            ViewBag.Cars = _carsParking;
             ViewBag.TotalCars = _totalCars;
+            if (_endSimulation)
+            {                
+                _sum = 0;
+                _totalCars = 0;                
+            }
             return View(_repository.Cars);
         }
 
@@ -33,6 +43,7 @@ namespace ParkingHouse.Controllers
             {
                 _sum += _repository.RemoveCar(id);
                 _totalCars++;
+                _carsParking--;
                 TempData["message"] = "A vehicle has left the parking house!";
                 return RedirectToAction("List", new{ id = _sum});
             }
@@ -46,9 +57,11 @@ namespace ParkingHouse.Controllers
         [HttpPost]
         public ActionResult AddParkingCar(Car car)
         {
+  
             if (ModelState.IsValid)
             {
                 _repository.AddCar(car);
+                _carsParking = _repository.Cars.Count();
                 TempData["message"] = "A vehicle has entered the parking house!";
                 return RedirectToAction("List");
             }
@@ -65,18 +78,9 @@ namespace ParkingHouse.Controllers
             {
                 RemoveParkingCar(car.CarID);
             }            
-            TempData["message"] = "Simulation ended! All vehicles have left.";            
-            return RedirectToAction("List", new{ sum = _sum, carsTotal = _totalCars});
-        }
-        public JsonResult GetTotal(double? sum, int? carsTotal)
-        {
-            _sum = 0;
-            _totalCars = 0;
-            return Json(new
-            {
-                sum, 
-                carsTotal
-            }, JsonRequestBehavior.AllowGet);
+            TempData["message"] = "Simulation ended! All vehicles have left.";
+            _endSimulation = true;            
+            return RedirectToAction("List");
         }
     }
 }
