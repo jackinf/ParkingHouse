@@ -47,9 +47,6 @@
       <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Moq">
-      <HintPath>..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
-    </Reference>
     <Reference Include="Ninject">
       <HintPath>..\packages\Ninject.3.0.1.10\lib\net45-full\Ninject.dll</HintPath>
     </Reference>
@@ -138,9 +135,12 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\ParkingController.cs" />
     <Compile Include="DB\Abstract\ICarsParkingRepository.cs" />
+    <Compile Include="DB\Abstract\ISummaryRepository.cs" />
     <Compile Include="DB\Concrete\EfDbContext.cs" />
     <Compile Include="DB\Concrete\EfCarsRepository.cs" />
+    <Compile Include="DB\Concrete\EfCurrentProfitRepository.cs" />
     <Compile Include="DB\Entities\Car.cs" />
+    <Compile Include="DB\Entities\CurrentProfit.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -235,8 +235,8 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Parking\List.cshtml" />
     <Content Include="Views\Parking\CarSummary.cshtml" />
-    <Content Include="Views\Shared\AddParkingCar.cshtml" />
     <Content Include="Views\Parking\EndSimulation.cshtml" />
+    <Content Include="Views\Parking\AddParkingCar.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

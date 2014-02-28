@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web.Mvc;
 using System.Web.Routing;
-using Moq;
 using Ninject;
 using ParkingHouse.DB.Abstract;
 using ParkingHouse.DB.Concrete;
-using ParkingHouse.DB.Entities;
-using ParkingHouse.HelperMethods;
 
 namespace ParkingHouse.Infrastructure
 {
@@ -30,6 +25,7 @@ namespace ParkingHouse.Infrastructure
         private void AddBindings()
         {
             ninjectKernel.Bind<ICarsParkingRepository>().To<EfCarsRepository>();
+            ninjectKernel.Bind<ISummaryRepository>().To<EfCurrentProfitRepository>();
         }
     }
 }

@@ -2,6 +2,14 @@
 <div class="item">
     @using (Html.BeginForm("AddParkingCar", "Parking"))
     {
+        if (TempData["error"] != null)
+        {  
+                <ul class="field-validation-error">
+                    <li>
+                        @TempData["error"]
+                    </li>
+                </ul>
+        }
         @Html.DisplayNameFor(m => m.CarLength)<br /> 
         @Html.TextBoxFor(m => m.CarLength, new{ @Value = "4,00" })<br />
         @Html.DisplayNameFor(m => m.CarWidth)<br />
