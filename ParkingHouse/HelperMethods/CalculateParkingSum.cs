@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using ParkingHouse.DB.Entities;
 
 namespace ParkingHouse.HelperMethods
@@ -19,7 +16,7 @@ namespace ParkingHouse.HelperMethods
             }
             else
             {
-                TimeSpan elapsedTime = car.EntryTime - DateTime.Now;
+                var elapsedTime = car.EntryTime - DateTime.Now;
                 
                 _sum = (elapsedTime.Hours+1)*HourlyFee;
             }

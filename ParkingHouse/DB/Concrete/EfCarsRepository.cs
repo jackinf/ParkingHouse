@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Web.Mvc;
 using ParkingHouse.Controllers;
 using ParkingHouse.DB.Abstract;
 using ParkingHouse.DB.Entities;
@@ -10,8 +9,10 @@ namespace ParkingHouse.DB.Concrete
 {
     public class EfCarsRepository : ICarsParkingRepository
     {
-        private EfDbContext context = new EfDbContext();
-        private const int ParkingSpaces = 500;
+        private readonly EfDbContext context = new EfDbContext();
+        private const int TotalParkingSpaces = 500;
+        private const int TotalFreeParkingSpaces = (int)(TotalParkingSpaces * 0.9);
+        private const int TotalContractParingSpaces = (int)(TotalParkingSpaces * 0.1);
 
         public IQueryable<Car> Cars
         {
@@ -25,46 +26,102 @@ namespace ParkingHouse.DB.Concrete
             context.SaveChanges();
         }
 
-        
-
         public double RemoveCar(int carId)
         {
-            Car car = context.Cars.FirstOrDefault(p => p.CarID == carId);
-            double sum = CalculateParkingSum.GetCarParkingSum(car);
+            var car = context.Cars.FirstOrDefault(p => p.CarID == carId);
+            var sum = CalculateParkingSum.GetCarParkingSum(car);
             context.Cars.Remove(car);
             context.SaveChanges();
             return sum;
         }
-        
-        public void CheckForErrors(Car car, ParkingController parkingController)
+
+        /// <summary>
+        /// Adds cars into parking spaces according if car has contract or not.
+        /// </summary>
+        /// <param name="car">Car which is being added</param>
+        /// <param name="parkingController">Used to set modelstate to false if any errors occur</param>
+        public void AddCarToParkingLot(Car car, ParkingController parkingController)
         {
-            int carsWithContract = (from cars in context.Cars where cars.HasContract select cars).Count();
-            int carsInParkingLot = context.Cars.Count();
-            if (carsInParkingLot < ParkingSpaces)
-            {
-                if (carsInParkingLot >= (ParkingSpaces - ParkingSpaces*0.1) && carsWithContract < ParkingSpaces*0.1 &&
-                    car.HasContract)
-                {
-                    context.Cars.Add(car);
-                }else if (carsInParkingLot >= (ParkingSpaces - ParkingSpaces*0.1) && carsWithContract < ParkingSpaces*0.1 &&
-                          !car.HasContract)
-                {
-                    int reservedSpaces = (int)(ParkingSpaces * 0.1) - carsWithContract;
-                    if (reservedSpaces < 0) reservedSpaces = 0;
-                    int freeSpaces = ParkingSpaces - (carsWithContract + reservedSpaces + (int)(ParkingSpaces - ParkingSpaces * 0.1));
-                    if (freeSpaces > 0) context.Cars.Add(car);                    
-                    else
-                    {
-                        parkingController.ModelState.AddModelError("error",
-                                string.Format("Last {0} spot(s) reserved for clients with a contract. Come back later.", reservedSpaces));
-                    }
-                }                                           
-            }
-            else
+            var carsInParkingLotWithContract = context.Cars.Count(c => c.HasContract);
+            var carsInParkingLot = context.Cars.Count();
+
+            if (!HasFreeParkingSpaces(carsInParkingLot))
             {
                 parkingController.ModelState.AddModelError("error",
-                            "The parking house is full. Come back later.");
+                    "The parking house is full. Come back later.");
+                return;
             }
+
+            // try to add a car with contract
+            if (CanAddCarsWhenNoFreeSpaceLeft(carsInParkingLot, carsInParkingLotWithContract, car.HasContract))
+            {
+                context.Cars.Add(car);
+                return;
+            }
+
+            // try to add a car with no contract
+            if (CanAddCarsWhenNoFreeSpaceLeft(carsInParkingLot, carsInParkingLotWithContract, !car.HasContract))
+            {
+                var reservedSpaces = GetReservedSpaces(carsInParkingLotWithContract);
+                if (GetFreeSpaces(carsInParkingLotWithContract, reservedSpaces) <= 0)
+                {
+                    parkingController.ModelState.AddModelError("error",
+                        string.Format(
+                            "Last {0} spot(s) reserved for clients with a contract. Come back later.",
+                            reservedSpaces));
+                    return;
+                }
+
+                // Add a car only if there are free spaces left
+                context.Cars.Add(car);
+            }
+        }
+
+        /// <summary>
+        /// Calculate free spaces
+        /// </summary>
+        /// <param name="carsInParkingLotWithContract"></param>
+        /// <param name="reservedSpaces"></param>
+        /// <returns></returns>
+        private int GetFreeSpaces(int carsInParkingLotWithContract, int reservedSpaces)
+        {
+            var freeSpaces = TotalParkingSpaces -
+                             (carsInParkingLotWithContract + reservedSpaces + TotalFreeParkingSpaces);
+            return freeSpaces;
+        }
+
+        /// <summary>
+        /// Calculate reserved spaces
+        /// </summary>
+        /// <param name="carsInParkingLotWithContract"></param>
+        /// <returns></returns>
+        private int GetReservedSpaces(int carsInParkingLotWithContract)
+        {
+            var reservedSpaces = TotalContractParingSpaces - carsInParkingLotWithContract;
+            return reservedSpaces < 0 ? 0 : reservedSpaces;
+        }
+
+        /// <summary>
+        /// Checks if number of cars currently in parking lot take all the free spaces and
+        /// if there are contract parking spaces left.
+        /// </summary>
+        /// <param name="carsInParkingLot"></param>
+        /// <param name="carsInParkingLotWithContract"></param>
+        /// <param name="hasContract"></param>
+        /// <returns></returns>
+        private static bool CanAddCarsWhenNoFreeSpaceLeft(int carsInParkingLot, int carsInParkingLotWithContract, bool hasContract)
+        {
+            return carsInParkingLot >= TotalFreeParkingSpaces && carsInParkingLotWithContract < TotalContractParingSpaces && hasContract;
+        }
+
+        /// <summary>
+        /// Checks if Parking lot contains any free spaces
+        /// </summary>
+        /// <param name="carsInParkingLot"></param>
+        /// <returns></returns>
+        private bool HasFreeParkingSpaces(int carsInParkingLot)
+        {
+            return carsInParkingLot < TotalParkingSpaces;
         }
     }
 }

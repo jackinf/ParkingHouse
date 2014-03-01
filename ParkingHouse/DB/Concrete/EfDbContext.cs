@@ -1,6 +1,5 @@
 ﻿using System.Data.Entity;
 using ParkingHouse.DB.Entities;
-using ParkingHouse.Models;
 
 namespace ParkingHouse.DB.Concrete
 {

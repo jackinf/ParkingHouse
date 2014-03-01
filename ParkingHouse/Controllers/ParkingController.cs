@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Linq;
 using System.Web.Mvc;
 using ParkingHouse.DB.Abstract;
 using ParkingHouse.DB.Entities;
@@ -12,8 +9,8 @@ namespace ParkingHouse.Controllers
     public class ParkingController : Controller
     {
 
-        private ICarsParkingRepository _repository;
-        private ISummaryRepository _repositorySum;
+        private readonly ICarsParkingRepository _repository;
+        private readonly ISummaryRepository _repositorySum;
       
         public ParkingController(ICarsParkingRepository repo, ISummaryRepository repoSum)
         {
@@ -21,7 +18,7 @@ namespace ParkingHouse.Controllers
             _repositorySum = repoSum;
             ParkingLot.CarsParking = _repository.Cars.Count();
             ParkingLot.Sum = (double)(from database in _repositorySum.CurrentProfits orderby database.ID descending select database.CurrentSum).FirstOrDefault();
-            ParkingLot.TotalCars = (int)(from database in _repositorySum.CurrentProfits orderby database.ID descending select database.TotalCars).FirstOrDefault();
+            ParkingLot.TotalCars = (from database in _repositorySum.CurrentProfits orderby database.ID descending select database.TotalCars).FirstOrDefault();
         }
 
         public ActionResult List()
@@ -42,7 +39,6 @@ namespace ParkingHouse.Controllers
 
         public ActionResult RemoveParkingCar(int id)
         {            
-
             if (ModelState.IsValid)
             {
                 ParkingLot.Sum += _repository.RemoveCar(id);                
@@ -52,17 +48,14 @@ namespace ParkingHouse.Controllers
                 TempData["message"] = "A vehicle has left the parking house!";
                 return RedirectToAction("List", new{ id = ParkingLot.Sum});
             }
-            else
-            {
-                TempData["message"] = "The vehicle has broken down.";
-                return RedirectToAction("List");
-            }           
+            TempData["message"] = "The vehicle has broken down.";
+            return RedirectToAction("List");
         }
 
         [HttpPost]
         public ActionResult AddParkingCar(Car car)
         {
-            _repository.CheckForErrors(car, this);
+            _repository.AddCarToParkingLot(car, this);
             if (ModelState.IsValid)
             {
                 _repository.AddCar(car);
@@ -70,14 +63,11 @@ namespace ParkingHouse.Controllers
                 TempData["message"] = "A vehicle has entered the parking house!";
                 return RedirectToAction("List");
             }
-            else
-            {
-                TempData["message"] = "The vehicle does not fit.";
-                TempData["error"] = string.Join("; ", ModelState.Values
-                                        .SelectMany(x => x.Errors)
-                                        .Select(x => x.ErrorMessage));
-                return RedirectToAction("List");
-            }
+            TempData["message"] = "The vehicle does not fit.";
+            TempData["error"] = string.Join("; ", ModelState.Values
+                .SelectMany(x => x.Errors)
+                .Select(x => x.ErrorMessage));
+            return RedirectToAction("List");
         }
 
         public ActionResult EndSimulation()

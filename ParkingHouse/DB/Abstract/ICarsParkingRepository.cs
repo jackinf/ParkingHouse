@@ -9,6 +9,6 @@ namespace ParkingHouse.DB.Abstract
         IQueryable<Car> Cars { get; }
         double RemoveCar(int carId);
         void AddCar(Car car);
-        void CheckForErrors(Car car, ParkingController parkingController);
+        void AddCarToParkingLot(Car car, ParkingController parkingController);
     }
 }

@@ -146,6 +146,15 @@
     </Compile>
     <Compile Include="HelperMethods\CalculateParkingSum.cs" />
     <Compile Include="Infrastructure\NinjectControllerFactory.cs" />
+    <Compile Include="Migrations\201402261743218_InitialCreate.cs" />
+    <Compile Include="Migrations\201402261743218_InitialCreate.Designer.cs">
+      <DependentUpon>201402261743218_InitialCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403011145470_Initial.cs" />
+    <Compile Include="Migrations\201403011145470_Initial.Designer.cs">
+      <DependentUpon>201403011145470_Initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ParkingLot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -243,6 +252,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201402261743218_InitialCreate.resx">
+      <DependentUpon>201402261743218_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403011145470_Initial.resx">
+      <DependentUpon>201403011145470_Initial.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

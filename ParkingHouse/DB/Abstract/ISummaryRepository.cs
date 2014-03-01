@@ -1,5 +1,4 @@
-﻿using System.Data.Entity;
-using System.Linq;
+﻿using System.Linq;
 using ParkingHouse.DB.Entities;
 
 namespace ParkingHouse.DB.Abstract
